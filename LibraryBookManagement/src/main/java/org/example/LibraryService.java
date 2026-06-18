@@ -2,50 +2,57 @@ package org.example;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class LibraryService {
-    private Map<Long, Book> books = new HashMap<>();
-    private Map<Long, Reader> readers = new HashMap<>();
+    private final Map<Long, Book> books = new HashMap<>();
+    private final Map<Long, Reader> readers = new HashMap<>();
 
     public void addBook(Book book) {
-        books.put(book.getId(), book);
+        Objects.requireNonNull(book, "Book cannot be null");
+        if (books.putIfAbsent(book.getId(), book) != null) {
+            throw new IllegalArgumentException("Book with id " + book.getId() + " exists!");
+        }
     }
 
     public void addReader(Reader reader) {
-        readers.put(reader.getId(), reader);
+        Objects.requireNonNull(reader, "Reader cannot be null");
+        if (readers.putIfAbsent(reader.getId(), reader) != null) {
+            throw new IllegalArgumentException("Reader with id " + reader.getId() + " exists");
+        }
     }
 
     public void borrowBook(long readerId, long bookId) {
         if (!books.containsKey(bookId)) {
-            throw new IllegalArgumentException("Book with ID " + bookId + "not found");
+            throw new IllegalArgumentException("Book with ID " + bookId + " not found");
         }
         if (!readers.containsKey(readerId)) {
-            throw new IllegalArgumentException("Reader with ID " + readerId + "not found");
+            throw new IllegalArgumentException("Reader with ID " + readerId + " not found");
         }
         Book book = books.get(bookId);
         if (book.isAvailable()) {
             Reader reader = readers.get(readerId);
-            reader.getBorrowedBooks().add(book);
-            book.setAvailable(false);
+            reader.borrowBook(book);
+            book.markAsBorrowed(false);
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Book is already borrowed");
         }
     }
 
     public void returnBook(long readerId, long bookId) {
         if (!books.containsKey(bookId)) {
-            throw new IllegalArgumentException("Book with ID " + bookId + "not found");
+            throw new IllegalArgumentException("Book with ID " + bookId + " not found");
         }
         if (!readers.containsKey(readerId)) {
-            throw new IllegalArgumentException("Reader with ID " + readerId + "not found");
+            throw new IllegalArgumentException("Reader with ID " + readerId + " not found");
         }
         Book book = books.get(bookId);
         Reader reader = readers.get(readerId);
-        if (reader.getBorrowedBooks().contains(book)) {
-            reader.getBorrowedBooks().remove(book);
-            book.setAvailable(true);
+        if (reader.hasBorrowedBook(book)) {
+            reader.returnBook(book);
+            book.markAsAvailable(true);
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Reader did not borrow this book");
         }
     }
 }

@@ -1,13 +1,23 @@
 package org.example;
 
+import java.util.Objects;
+
 public class Book {
-    private long id;
-    private String title;
-    private String description;
-    private Author author;
+    private final long id;
+    private final String title;
+    private final String description;
+    private final Author author;
     private boolean isAvailable;
 
-    public Book(long id, String title, String description, Author author, boolean isAvailable) {
+    public Book(long id, String title, String description, Author author) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be positive.");
+        }
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty.");
+        }
+        Objects.requireNonNull(author, "Author cannot be null.");
+
         this.id = id;
         this.title = title;
         this.description = description;
@@ -19,39 +29,15 @@ public class Book {
         return id;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Author getAuthor() {
-        return author;
-    }
-
     public boolean isAvailable() {
         return isAvailable;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    void markAsBorrowed(boolean borrowed) {
+        isAvailable = borrowed;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setAuthor(Author author) {
-        this.author = author;
-    }
-
-    public void setAvailable(boolean available) {
+    void markAsAvailable(boolean available) {
         isAvailable = available;
     }
 }
